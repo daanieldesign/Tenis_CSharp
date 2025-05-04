@@ -73,7 +73,7 @@ namespace Tenis
                     case "4":
                         return;
                     default:
-                        Console.WriteLine("Neplatná volba, zkuste zadat volbu znovu.");
+                        Console.WriteLine("Neplatná volba, zkuste to znovu.");
                         Console.ReadKey();
                         break;
                 }
@@ -96,7 +96,7 @@ namespace Tenis
 
         static void Vyhra(Hrac hrac1, Hrac hrac2)
         {
-            Console.WriteLine("Chceš spustit novou hru? (A - ano N - ne)");
+            Console.WriteLine("Chcete spustit novou hru? (A - ano N - ne)");
             string vstup = Console.ReadLine();
 
             if (vstup == "A")
