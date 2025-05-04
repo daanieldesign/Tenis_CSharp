@@ -1,32 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System;
+
+using System;
 
 namespace Tenis
 {
-    internal class Program
+    class Program
     {
         static void Main(string[] args)
         {
-            Console.Write("Zadejte jméno hráče A: ");
-            Hrac hracA = new Hrac(Console.ReadLine());
+            Console.Write("Zadejte jméno hráče 1: ");
+            string Jmeno1 = Console.ReadLine();
+            Hrac hrac1 = new Hrac(Jmeno1);
 
-            Console.Write("Zadejte jméno hráče B: ");
-            Hrac hracB = new Hrac(Console.ReadLine());
+            Console.Write("Zadejte jméno hráče 2: ");
+            string Jmeno2 = Console.ReadLine();
+            Hrac hrac2 = new Hrac(Jmeno2);
 
             while (true)
             {
-                Console.Clear(); // smaže obrazovku – nepovinné, ale přehledné
+                Console.Clear();
+                Skore(hrac1);
+                Skore(hrac2);
 
-                // ZOBRAZENÍ SKÓRE
-                Console.WriteLine("========== SKÓRE ==========");
-                VypisSkore(hracA);
-                VypisSkore(hracB);
-                Console.WriteLine("============================\n");
-
-                // MENU
+                Console.WriteLine("Menu:");
                 Console.WriteLine("1 - Bod pro hráče A");
                 Console.WriteLine("2 - Bod pro hráče B");
                 Console.WriteLine("3 - Restartovat hru");
@@ -37,73 +37,155 @@ namespace Tenis
                 switch (volba)
                 {
                     case "1":
-                        PridejBod(hracA, hracB);
+                        Bod(hrac1, hrac2);
+                        if (hrac1.Sety == 2)
+                        {
+                            hrac1.Sety++;
+                            Console.WriteLine(hrac1.Jmeno + " vyhrál zápas!");
+                            Vyhra(hrac1, hrac2);
+                        }
+                        else if (hrac2.Sety == 2)
+                        {
+                            hrac2.Sety++;
+                            Console.WriteLine(hrac2.Jmeno + " vyhrál zápas!");
+                            Vyhra(hrac1, hrac2);
+                        }
                         break;
                     case "2":
-                        PridejBod(hracB, hracA);
+                        Bod(hrac2, hrac1);
+                        if (hrac1.Sety == 2)
+                        {
+                            Console.WriteLine(hrac1.Jmeno + " vyhrál zápas!");
+                            Vyhra(hrac1, hrac2);
+                        }
+                        else if (hrac2.Sety == 2)
+                        {
+                            Console.WriteLine(hrac2.Jmeno + " vyhrál zápas!");
+                            Vyhra(hrac1, hrac2);
+                        }
                         break;
                     case "3":
-                        hracA.Body = hracB.Body = 0;
-                        hracA.Gemy = hracB.Gemy = 0;
-                        hracA.Sety = hracB.Sety = 0;
+                        hrac1.Reset();
+                        hrac2.Reset();
+                        Console.WriteLine("Hra byla resetována. Stiskněte libovolnou klávesu pro pokračování.");
+                        Console.ReadKey();
                         break;
                     case "4":
-                        Console.WriteLine("Ukončuji hru...");
                         return;
                     default:
-                        Console.WriteLine("Neplatná volba.");
+                        Console.WriteLine("Neplatná volba, zkuste zadat volbu znovu.");
+                        Console.ReadKey();
                         break;
                 }
-                Console.ReadKey();
             }
         }
-        static void VypisSkore(Hrac hrac)
+
+        static void Skore(Hrac hrac)
         {
-            Console.WriteLine(hrac.Jmeno + " | Body: " + PrelozSkore(hrac.Body) + " | Gemy: " + hrac.Gemy + " | Sety: " + hrac.Sety);
+            string body;
+
+            if (hrac.Adv)
+                body = "Výhoda";
+            else if (hrac.Body >= 3)
+                body = "40";
+            else
+                body = SkoreConverter(hrac.Body);
+
+            Console.WriteLine(hrac.Jmeno + " | Body: " + body + " | Gemy: " + hrac.Gemy + " | Sety: " + hrac.Sety);
         }
 
-        static string PrelozSkore(int body)
+        static void Vyhra(Hrac hrac1, Hrac hrac2)
         {
-            switch (body)
+            Console.WriteLine("Chceš spustit novou hru? (A - ano N - ne)");
+            string vstup = Console.ReadLine();
+
+            if (vstup == "A")
             {
-                case 0: return "0";
-                case 1: return "15";
-                case 2: return "30";
-                case 3: return "40";
-                default: return "?";
+                hrac1.Reset();
+                hrac2.Reset();
+            }
+            else
+            {
+                Environment.Exit(0);
             }
         }
 
 
-        static void PridejBod(Hrac hrac, Hrac souper)
+        static string SkoreConverter(int body)
         {
+            if (body == 0) return "0";
+            if (body == 1) return "15";
+            if (body == 2) return "30";
+            if (body == 3) return "40";
+            return null;
+        }
+
+        static void Bod(Hrac hrac, Hrac souper)
+        {
+            if (hrac.Body == 3 && souper.Body == 3)
+            {
+                if (hrac.Adv)
+                {
+                    VyhraGem(hrac, souper);
+                }
+                else if (souper.Adv)
+                {
+                    souper.Adv = false;
+                }
+                else
+                {
+                    hrac.Adv = true;
+                }
+
+                return;
+            }
+
+            if (hrac.Body == 3 && souper.Body < 3)
+            {
+                VyhraGem(hrac, souper);
+                return;
+            }
+
             hrac.Body++;
-
-            if (hrac.Body > 3 && souper.Body < 3)
-            {
-                Console.WriteLine($"{hrac.Jmeno} vyhrává gem!");
-                hrac.Gemy++;
-                hrac.Body = 0;
-                souper.Body = 0;
-            }
         }
 
-
-        class Hrac
+        static void VyhraGem(Hrac hrac, Hrac souper)
         {
-            public string Jmeno { get; set; }
-            public int Body { get; set; }
-            public int Gemy {  get; set; }
-            public int Sety { get; set; }
+            hrac.Gemy++;
+            hrac.Body = 0;
+            souper.Body = 0;
+            hrac.Adv = false;
+            souper.Adv = false;
 
-            public Hrac(string jmeno)
+            if (hrac.Gemy >= 6 && (hrac.Gemy - souper.Gemy) >= 2)
             {
-                Jmeno = jmeno;
-                Body = 0;
-                Gemy = 0;
-                Sety = 0;
+                hrac.Sety++;
+                hrac.Gemy = 0;
+                souper.Gemy = 0;
             }
+        }
+    }
 
+    class Hrac
+    {
+        public string Jmeno { get; set; }
+        public int Body { get; set; }
+        public int Gemy { get; set; }
+        public int Sety { get; set; }
+        public bool Adv { get; set; }
+
+        public Hrac(string jmeno)
+        {
+            Jmeno = jmeno;
+            Reset();
+        }
+
+        public void Reset()
+        {
+            Body = 0;
+            Gemy = 0;
+            Sety = 0;
+            Adv = false;
         }
     }
 }
